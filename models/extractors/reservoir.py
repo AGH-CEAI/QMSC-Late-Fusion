@@ -1,11 +1,17 @@
 from qiskit import QuantumCircuit
-from qiskit.primitives import StatevectorSampler
-from qiskit.circuit.random import random_circuit
+from qiskit.quantum_info import Statevector
+import numpy.typing as npt
 
 
-qc = random_circuit(num_qubits=4, depth=5, measure=True, seed=42)
-print(qc.draw(output="text"))
+class QuantumReservoir:
+    def __init__(
+        self,
+        encoding_qc: QuantumCircuit,
+        reservoir_qc: QuantumCircuit,
+    ):
+        self.circuit = encoding_qc.compose(reservoir_qc)
 
-sampler = StatevectorSampler(seed=42)
-result = sampler.run([qc], shots=1024).result()
-print(result[0].data.c.get_counts())
+    def extract_features(self, x: npt.NDArray) -> npt.NDArray:
+        bound_qc = self.circuit.assign_parameters(x)
+        state = Statevector.from_instruction(bound_qc)
+        return state.probabilities()
