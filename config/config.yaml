@@ -1,2 +1,21 @@
+base_seed: &MY_SEED 42
+
 datasets:
   hidden-manifold: "datasets/hidden-manifold/"
+  feature_dimension: 8
+
+feature_extractor:
+  measure: False
+  seed: *MY_SEED
+  qubits: 4
+  ansatz_depth: 5
+
+training:
+  solver: "adam"
+  alpha: 1e-5
+  hidden_layer_sizes: ()
+  random_state: *MY_SEED
+  max_iter: 300
+  learning_rate: 0.01
+  activation: "relu"
+  early_stopping: True
