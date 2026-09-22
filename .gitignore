@@ -12,3 +12,4 @@ wheels/
 # User-defined
 datasets/*
 !datasets/.gitkeep
+.env
