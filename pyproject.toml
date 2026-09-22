@@ -9,6 +9,7 @@ dependencies = [
     "fsspec>=2026.7.0",
     "h5py>=3.16.0",
     "matplotlib>=3.11.2",
+    "mlflow>=3.16.1",
     "pennylane>=0.45.1",
     "pylatexenc>=2.11",
     "pyyaml>=6.0.3",
