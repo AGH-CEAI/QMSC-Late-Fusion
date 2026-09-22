@@ -13,4 +13,5 @@ dependencies = [
     "pylatexenc>=2.11",
     "pyyaml>=6.0.3",
     "qiskit>=2.5.2",
+    "scikit-learn>=1.9.1",
 ]
