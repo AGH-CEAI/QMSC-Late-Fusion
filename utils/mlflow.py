@@ -5,7 +5,6 @@ from statistics import mean, stdev
 from typing import Any, Dict
 
 import mlflow
-from pytorch_lightning.loggers import MLFlowLogger
 
 
 def setup_mlflow(experiment_name: str) -> None:
@@ -29,15 +28,6 @@ def create_mlflow_experiment(exp_name: str) -> None:
         tags=tags,
         artifact_location=os.environ["MLFLOW_ARTIFACTS_ROOT"],
     )
-
-
-# TODO(SD): Refactor to use MLFlowLogger directly in the pipeline and training, instead of these helper functions
-def get_mlflow_logger() -> MLFlowLogger:
-    logger = MLFlowLogger(
-        tracking_uri=os.environ["MLFLOW_TRACKING_URI"],
-        run_id=mlflow.active_run().info.run_id,  # type: ignore
-    )
-    return logger
 
 
 def log_params(params: Dict[str, Any]) -> None:

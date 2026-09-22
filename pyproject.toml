@@ -11,6 +11,7 @@ dependencies = [
     "matplotlib>=3.11.2",
     "mlflow>=3.16.1",
     "pennylane>=0.45.1",
+    "psycopg2>=2.9.13",
     "pylatexenc>=2.11",
     "pyyaml>=6.0.3",
     "qiskit>=2.5.2",
