@@ -12,6 +12,8 @@ feature_extractor:
     seed: *MY_SEED
     num_qubits: 8
     depth: 5
+  encoder:
+    feature_dimension: 4
 
 training:
   solver: "adam"
