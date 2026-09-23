@@ -1,7 +1,6 @@
 import yaml
 import utils.mlflow as mf
 
-from scripts.test import test_reservoir
 from scripts.experiments.reservoir.initial_experiments import (
     initial_1,
     initial_classical_1,

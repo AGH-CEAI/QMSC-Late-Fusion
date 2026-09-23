@@ -13,3 +13,4 @@ wheels/
 datasets/*
 !datasets/.gitkeep
 .env
+utils/start_mlflow_server.sh

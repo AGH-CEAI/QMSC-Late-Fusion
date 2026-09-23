@@ -1,4 +1,4 @@
-from models.extractors.reservoir import QuantumReservoir, QuantumReservoir2
+from models.extractors.reservoir import QuantumReservoir
 from qiskit.circuit.random import random_circuit
 from qiskit.circuit.library import z_feature_map
 import numpy as np
@@ -8,7 +8,7 @@ def test_reservoir():
     encoder = z_feature_map(feature_dimension=4)
     qc = random_circuit(num_qubits=3, depth=5, measure=False, seed=42)
 
-    reservoir = QuantumReservoir2(
+    reservoir = QuantumReservoir(
         encoding_qc=encoder,
         reservoir_qc=qc,
     )

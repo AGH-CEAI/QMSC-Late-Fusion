@@ -20,5 +20,4 @@ training:
   max_iter: 300
   learning_rate: "constant"
   learning_rate_init: 0.01
-  activation: "relu"
   early_stopping: True

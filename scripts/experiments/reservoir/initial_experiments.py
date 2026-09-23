@@ -1,7 +1,7 @@
 import data.loaders.hidden_manifold as dt
-from models.extractors.reservoir import QuantumReservoir, QuantumReservoir2
+from models.extractors.reservoir import QuantumReservoir
 from qiskit.circuit.random import random_circuit
-from qiskit.circuit.library import z_feature_map, StatePreparation
+from qiskit.circuit.library import z_feature_map
 from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import confusion_matrix
 
@@ -28,8 +28,6 @@ def initial_1(config: dict):
     # Feature Extraction:
     train_features = reservoir.extract_features_batch(x_train)
     test_features = reservoir.extract_features_batch(x_test)
-
-    # print(test_features[0])
 
     # Fit output layer
     clf.fit(train_features, y_train)
