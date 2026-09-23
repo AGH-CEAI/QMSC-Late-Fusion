@@ -3,6 +3,7 @@ import os
 import socket
 from statistics import mean, stdev
 from typing import Any, Dict
+import numpy as np
 
 import mlflow
 
@@ -60,17 +61,22 @@ def start_child_hp_run(fold_name: str) -> mlflow.ActiveRun:
     return mlflow.start_run(run_name=fold_name, nested=True)
 
 
-def log_metrics(metrics: Dict[str, Any]) -> None:
-    for metric_name, values in metrics.items():
-        mlflow.log_metric(metric_name, values)
+def log_metrics(results: Dict[str, Any]) -> None:
+    metrics = {
+        "mean_fit_time": np.mean(results["fit_time"]),
+        "mean_score_time": np.mean(results["score_time"]),
+    }
 
+    for key, values in results.items():
+        if key.startswith("test_"):
+            name = key.replace("test_", "")
 
-def log_aggregated_metrics(
-    all_fold_metrics: dict, preds: list, true_labels: list
-) -> None:
-    for metric_name, values in all_fold_metrics.items():
-        mlflow.log_metric(f"{metric_name}_mean", mean(values))
-        mlflow.log_metric(f"{metric_name}_std", stdev(values))
+            # Mean
+            metrics[f"mean_{name}"] = np.mean(values)
+
+            # Per Fold
+            for fold_idx, val in enumerate(values):
+                metrics[f"{name}_fold_{fold_idx}"] = val
 
 
 # def log_model(
