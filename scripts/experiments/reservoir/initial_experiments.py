@@ -3,7 +3,10 @@ from models.extractors.reservoir import QuantumReservoir
 from qiskit.circuit.random import random_circuit
 from qiskit.circuit.library import z_feature_map
 from sklearn.neural_network import MLPClassifier
+from sklearn.pipeline import Pipeline
+from sklearn.random_projection import GaussianRandomProjection
 from sklearn.metrics import confusion_matrix
+from sklearn.kernel_approximation import RBFSampler
 
 
 def initial_1(config: dict):
@@ -59,6 +62,55 @@ def initial_classical_1(config):
     print(mean_acc)
 
 
+def initial_classical_2(config):
+    # Load hidden-manifold data
+    x_train, y_train, x_test, y_test = dt.get_manifold(
+        **config["datasets"]["hidden-manifold"]
+    )
+
+    # Classical Classifier
+    clf = Pipeline(
+        [
+            (
+                "encoder",
+                RBFSampler(
+                    n_components=(
+                        2 ^ config["datasets"]["hidden-manifold"]["dim"]
+                    ),
+                    random_state=42,
+                ),
+            ),  # lub inny z poprzednich
+            ("classifier", MLPClassifier(**config["training"])),
+        ]
+    )
+    # Fit output layer
+    clf.fit(x_train, y_train)
+
+    mean_acc = clf.score(x_test, y_test)
+    print("\n\n_____\nClassical Gaussian encoder + single layer:\n")
+    print(mean_acc)
+
+
+def initial_classical_3(config):
+    # Load hidden-manifold data
+    x_train, y_train, x_test, y_test = dt.get_manifold(
+        **config["datasets"]["hidden-manifold"]
+    )
+
+    config["training"]["hidden_layer_sizes"] = [
+        2 ^ config["datasets"]["hidden-manifold"]["dim"]
+    ]
+    # Classical Classifier
+    clf = MLPClassifier(**config["training"])
+
+    # Fit output layer
+    clf.fit(x_train, y_train)
+
+    mean_acc = clf.score(x_test, y_test)
+    print("\n\n_____\nClassical with hidden layer:\n")
+    print(mean_acc)
+
+
 def initial_2_amplitude(config: dict):
     config["feature_extractor"]["random_circuit"]["num_qubits"] = 3
     # Load hidden-manifold data
@@ -76,8 +128,6 @@ def initial_2_amplitude(config: dict):
     # Feature Extraction:
     train_features = reservoir.extract_features_batch(x_train)
     test_features = reservoir.extract_features_batch(x_test)
-
-    # print(test_features[0])
 
     # Fit output layer
     clf.fit(train_features, y_train)
