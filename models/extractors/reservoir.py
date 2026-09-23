@@ -59,3 +59,9 @@ class QuantumReservoir:
         return np.array(
             [self._extract_features_single(sample) for sample in x]
         )
+
+    def copy(self):
+        return QuantumReservoir(
+            reservoir_qc=self.reservoir_qc.copy(),
+            encoding_qc=self.encoding_qc.copy(),
+        )
