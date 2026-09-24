@@ -4,7 +4,6 @@ from qiskit.circuit.random import random_circuit
 from qiskit.circuit.library import z_feature_map
 from sklearn.neural_network import MLPClassifier
 from sklearn.pipeline import Pipeline
-from sklearn.random_projection import GaussianRandomProjection
 from sklearn.metrics import confusion_matrix
 from sklearn.kernel_approximation import RBFSampler
 
@@ -15,14 +14,16 @@ def initial_1(config: dict):
         **config["datasets"]["hidden-manifold"]
     )
 
-    # Quantum Extreme Reservoi Computing model
-    encoder = z_feature_map(
+    # Quantum Extreme Reservoir Computing model
+    encoding_qc = z_feature_map(
         feature_dimension=config["datasets"]["hidden-manifold"]["dim"]
     )
-    qc = random_circuit(**config["feature_extractor"]["random_circuit"])
+    reservoir_qc = random_circuit(
+        **config["feature_extractor"]["random_circuit"]
+    )
     reservoir = QuantumReservoir(
-        encoding_qc=encoder,
-        reservoir_qc=qc,
+        encoding_qc=encoding_qc,
+        reservoir_qc=reservoir_qc,
     )
 
     # Classical Classifier

@@ -30,7 +30,7 @@ def msc_1(config: dict):
     # Classical Classifier
     clf = MLPClassifier(**config["training"])
 
-    # Divide input to simulate multiple source
+    # Divide input to simulate multiple sources (source A and source B)
     train_x_A, train_x_B = split_to_multisource(
         x=x_train,
         n_feat_per_source=config["feature_extractor"]["encoder"][
@@ -45,7 +45,7 @@ def msc_1(config: dict):
         ],
     )
 
-    # Extract features
+    # Extract features and concatenate features from both sources
     train_features = np.concatenate(
         (
             reservoir_A.extract_features_batch(train_x_A),
