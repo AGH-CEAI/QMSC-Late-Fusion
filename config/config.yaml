@@ -7,13 +7,11 @@ datasets:
     diff: False
 
 feature_extractor:
-  random_circuit:
-    measure: False
-    seed: *MY_SEED
-    num_qubits: 8
-    depth: 5
-  encoder:
-    feature_dimension: 4
+  measure: False
+  seed: *MY_SEED
+  num_qubits: 8
+  depth: 5
+  feature_dimension: 4
 
 training:
   solver: "adam"
@@ -23,3 +21,7 @@ training:
   learning_rate: "constant"
   learning_rate_init: 0.01
   early_stopping: True
+  n_folds: 5
+
+evaluation:
+  scoring: ["accuracy", "f1"]
