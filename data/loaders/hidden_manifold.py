@@ -1,4 +1,6 @@
 import os
+from typing import Tuple
+
 import numpy as np
 import numpy.typing as npt
 import pennylane as qp
@@ -14,15 +16,8 @@ class HiddenManifold(BaseDataLoader):
             self._get_manifold(data_path, dim, diff)
         )
 
-    def split_to_multisource(
-        self, n_sources: int = 2, n_feat_per_source: int = 4
-    ):
-        self.x_train_multisource = tuple(
-            self.x_train[
-                :, i * n_feat_per_source : (i + 1) * n_feat_per_source
-            ]
-            for i in range(n_sources)
-        )
+    def get_train(self) -> Tuple[npt.NDArray, npt.NDArray]:
+        return self.x_train, self.y_train
 
     # Private methods
     def _build_manifold_datafile_name(self, dim: int, diff: bool) -> str:
