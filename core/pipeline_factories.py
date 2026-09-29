@@ -1,9 +1,10 @@
 from typing import List
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
+from sklearn.base import ClassifierMixin
 
 
-def build_multisource_pipeline(
+def build_multisource_transformer(
     transformers: List[Pipeline], n_features_per_src: int
 ) -> ColumnTransformer:
     """
@@ -35,3 +36,24 @@ def build_multisource_pipeline(
             )
         )
     return ColumnTransformer(transformers=col_transformers, remainder="drop")
+
+
+def build_classification_pipeline(
+    preprocessor: ColumnTransformer, classifier: ClassifierMixin
+) -> Pipeline:
+    """
+    Builds a complete scikit-learn pipeline by combining a preprocessor and a classifier.
+
+    Args:
+        preprocessor (ColumnTransformer): The component handling data transformations.
+        classifier (ClassifierMixin): The final estimator used for predictions.
+
+    Returns:
+        Pipeline: A constructed pipeline ready for training and evaluation.
+    """
+    return Pipeline(
+        [
+            ("preprocessor", preprocessor),
+            ("classifier", classifier),
+        ]
+    )
