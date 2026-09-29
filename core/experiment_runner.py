@@ -9,6 +9,10 @@ from data.loaders.hidden_manifold import BaseDataLoader
 
 
 class ExperimentRunner:
+    """
+    Executes a machine learning experiment using cross-validation.
+    """
+
     def __init__(
         self,
         data_loader: BaseDataLoader,
@@ -16,6 +20,16 @@ class ExperimentRunner:
         classifier: ClassifierMixin,
         config: dict,
     ):
+        """
+        Initializes the experiment runner.
+
+        Args:
+            data_loader (BaseDataLoader): Component for loading the training data.
+            transformers (List[Pipeline]): List of pipelines for feature extraction.
+            classifier (ClassifierMixin): A scikit-learn compatible classifier.
+            config (dict): Configuration dictionary containing 'feature_extractor',
+                           'training', and 'evaluation' settings.
+        """
         # Object fields
         self.data_loader = data_loader
         self.transformers = transformers
@@ -27,6 +41,10 @@ class ExperimentRunner:
         self.eval_config = config["evaluation"]
 
     def run(self):
+        """
+        Runs the full experiment pipeline: loads data, builds the multisource
+        classification pipeline, evaluates it via cross-validation, and logs results.
+        """
         # Load data
         X, y = self.data_loader.get_train()
 
