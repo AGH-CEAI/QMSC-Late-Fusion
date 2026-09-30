@@ -1,11 +1,12 @@
-from qiskit import QuantumCircuit
-from qiskit.quantum_info import Statevector
-from qiskit.circuit.library import StatePreparation
-import numpy.typing as npt
 import numpy as np
+import numpy.typing as npt
+from qiskit import QuantumCircuit
+from qiskit.circuit.library import StatePreparation
+from qiskit.quantum_info import Statevector
+from sklearn.base import BaseEstimator, TransformerMixin
 
 
-class QuantumReservoir:
+class QuantumReservoir(TransformerMixin, BaseEstimator):
     """
     A Quantum Reservoir for extracting features from input data.
 
@@ -24,6 +25,30 @@ class QuantumReservoir:
     ):
         self.reservoir_qc = reservoir_qc
         self.encoding_qc = encoding_qc
+
+    def fit(self, X: npt.NDArray, y=None):
+        """Scikit-learn API requirement. Returns self."""
+        return self
+
+    def transform(self, X: npt.NDArray) -> npt.NDArray:
+        """
+        Extracts reservoir features for a batch of input samples.
+
+        Args:
+            x (npt.NDArray): A batch of input data samples.
+
+        Returns:
+            npt.NDArray: An array of extracted features (probabilities) for each sample.
+        """
+        return np.array(
+            [self._extract_features_single(sample) for sample in X]
+        )
+
+    def copy(self):
+        return QuantumReservoir(
+            reservoir_qc=self.reservoir_qc.copy(),
+            encoding_qc=self.encoding_qc.copy(),
+        )
 
     def _extract_features_single(self, x: npt.NDArray) -> npt.NDArray:
         """
@@ -45,23 +70,3 @@ class QuantumReservoir:
             bound_qc = self.reservoir_qc.compose(prep, front=True)
         state = Statevector.from_instruction(bound_qc)
         return state.probabilities()
-
-    def extract_features_batch(self, x: npt.NDArray) -> npt.NDArray:
-        """
-        Extracts reservoir features for a batch of input samples.
-
-        Args:
-            x (npt.NDArray): A batch of input data samples.
-
-        Returns:
-            npt.NDArray: An array of extracted features (probabilities) for each sample.
-        """
-        return np.array(
-            [self._extract_features_single(sample) for sample in x]
-        )
-
-    def copy(self):
-        return QuantumReservoir(
-            reservoir_qc=self.reservoir_qc.copy(),
-            encoding_qc=self.encoding_qc.copy(),
-        )
