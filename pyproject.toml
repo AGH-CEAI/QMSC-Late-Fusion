@@ -13,6 +13,7 @@ dependencies = [
     "pennylane>=0.45.1",
     "psycopg2>=2.9.13",
     "pylatexenc>=2.11",
+    "pytest>=9.1.1",
     "pyyaml>=6.0.3",
     "qiskit>=2.5.2",
     "scikit-learn>=1.9.1",
