@@ -1,11 +1,12 @@
 from typing import List
 
-from sklearn.base import ClassifierMixin
-from sklearn.model_selection import cross_validate
-from sklearn.pipeline import Pipeline
+from data.loaders.hidden_manifold import BaseDataLoader
+from pennylane import QNode
+from sklearn.base import BaseEstimator
+from sklearn.ensemble import StackingClassifier
+from sklearn.model_selection import StratifiedKFold, cross_validate
 
 import core.pipeline_factories as pipe
-from data.loaders.hidden_manifold import BaseDataLoader
 
 
 class ExperimentRunner:
@@ -16,8 +17,9 @@ class ExperimentRunner:
     def __init__(
         self,
         data_loader: BaseDataLoader,
-        transformers: List[Pipeline],
-        classifier: ClassifierMixin,
+        quantum_circuits: List[QNode],
+        classifier: BaseEstimator,
+        final_estimator: BaseEstimator,
         config: dict,
     ):
         """
@@ -25,20 +27,24 @@ class ExperimentRunner:
 
         Args:
             data_loader (BaseDataLoader): Component for loading the training data.
-            transformers (List[Pipeline]): List of pipelines for feature extraction.
-            classifier (ClassifierMixin): A scikit-learn compatible classifier.
+            quantum_circuits (List[QNode]): List of quantum circuits for feature extraction.
+            classifier (BaseEstimator): A scikit-learn compatible base classifier.
+            final_estimator (BaseEstimator): A scikit-learn compatible final estimator for the stacking ensemble.
             config (dict): Configuration dictionary containing 'feature_extractor',
                            'training', and 'evaluation' settings.
         """
         # Object fields
         self.data_loader = data_loader
-        self.transformers = transformers
+        self.quantum_circuits = quantum_circuits
         self.classifier = classifier
+        self.final_estimator = final_estimator
+        self.ensamble = None
 
         # Configuration fields
         self.feature_extractor_config = config["feature_extractor"]
         self.training_config = config["training"]
         self.eval_config = config["evaluation"]
+        self.seed = config["seed"]
 
     def run(self):
         """
@@ -48,24 +54,33 @@ class ExperimentRunner:
         # Load data
         X, y = self.data_loader.get_train()
 
-        # Build pipeline
-        preprocessor = pipe.build_multisource_transformer(
-            transformers=self.transformers,
-            n_features_per_src=self.feature_extractor_config[
-                "feature_dimension"
-            ],
+        # Build cross-validator
+        cv = StratifiedKFold(
+            n_splits=self.training_config["n_folds"],
+            shuffle=True,
+            random_state=self.seed,
         )
-        pipeline = pipe.build_classification_pipeline(
-            preprocessor=preprocessor, classifier=self.classifier
+
+        # Build classification pipeline
+        estimators = pipe.build_estimators(
+            quantum_circuits=self.quantum_circuits, classifier=self.classifier
+        )
+        ensamble = StackingClassifier(
+            estimators=estimators,
+            final_estimator=self.final_estimator,
+            stack_method="predict_proba",
+            n_job=-1,
+            cv=cv,
         )
 
         # Cross-validation
         score = cross_validate(
-            estimator=pipeline,
+            estimator=ensamble,
             X=X,
             y=y,
             scoring=self.eval_config["scoring"],
-            cv=self.training_config["n_folds"],
+            cv=cv,
         )
 
-        # Log model, params and results
+        # Log model, params and results (TODO)
+        return score
