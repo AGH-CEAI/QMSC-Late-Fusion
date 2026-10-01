@@ -1,7 +1,6 @@
 import numpy as np
 import numpy.typing as npt
 from qiskit import QuantumCircuit
-from qiskit.circuit.library import StatePreparation
 from qiskit.quantum_info import Statevector
 from sklearn.base import BaseEstimator, TransformerMixin
 
@@ -10,21 +9,19 @@ class QuantumReservoir(TransformerMixin, BaseEstimator):
     """
     A Quantum Reservoir for extracting features from input data.
 
-    Supports Parametric Encoding (if `encoding_qc` is provided) and
-    Amplitude Encoding (if `encoding_qc` is None).
+    Supports Parametric Encoding
 
     Args:
         reservoir_qc (QuantumCircuit): The quantum circuit acting as the parameter-free reservoir.
-        encoding_qc (QuantumCircuit, optional): The quantum circuit for data encoding. Defaults to None.
+        encoding_qc (QuantumCircuit): The quantum circuit for data encoding. Defaults to None.
     """
 
     def __init__(
         self,
         reservoir_qc: QuantumCircuit,
-        encoding_qc: QuantumCircuit = None,
+        encoding_qc: QuantumCircuit,
     ):
-        self.reservoir_qc = reservoir_qc
-        self.encoding_qc = encoding_qc
+        self.quantum_circuit = encoding_qc.compose(reservoir_qc)
 
     def fit(self, X: npt.NDArray, y=None):
         """Scikit-learn API requirement. Returns self."""
@@ -60,13 +57,6 @@ class QuantumReservoir(TransformerMixin, BaseEstimator):
         Returns:
             npt.NDArray: Measurement probabilities of the resulting quantum state.
         """
-        if self.encoding_qc is not None:
-            # Parametric encoding
-            bound_encoding = self.encoding_qc.assign_parameters(x)
-            bound_qc = bound_encoding.compose(self.reservoir_qc)
-        else:
-            # Amplitude Encoding
-            prep = StatePreparation(params=x, normalize=True)
-            bound_qc = self.reservoir_qc.compose(prep, front=True)
-        state = Statevector.from_instruction(bound_qc)
+        bound_encoding = self.quantum_circuit.assign_parameters(x)
+        state = Statevector.from_instruction(bound_encoding)
         return state.probabilities()
