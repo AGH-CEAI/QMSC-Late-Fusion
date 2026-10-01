@@ -5,7 +5,7 @@ import numpy as np
 import numpy.typing as npt
 import pennylane as qp
 
-from data.loaders.base import BaseDataLoader
+from data.base import BaseDataLoader
 
 
 class HiddenManifold(BaseDataLoader):

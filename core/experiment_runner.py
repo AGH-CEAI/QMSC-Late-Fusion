@@ -1,12 +1,12 @@
 from typing import List
 
-from data.loaders.hidden_manifold import BaseDataLoader
 from pennylane import QNode
 from sklearn.base import BaseEstimator
 from sklearn.ensemble import StackingClassifier
 from sklearn.model_selection import StratifiedKFold, cross_validate
 
 import core.pipeline_factories as pipe
+from data.hidden_manifold import BaseDataLoader
 
 
 class ExperimentRunner:
