@@ -12,17 +12,27 @@ import models.extractors.reservoir as res
 
 
 class TestQuantumReservoir:
-    def test_init(self, dataset: Tuple[npt.NDArray, npt.NDArray]):
+    def test_init(
+        self,
+        dataset: Tuple[npt.NDArray, npt.NDArray],
+        encoding_qc: QuantumCircuit,
+        reservoir_qc: QuantumCircuit,
+    ):
         X, y = data
-        res.QuantumReservoir()
-        pass
+        qc = res.QuantumReservoir(
+            reservoir_qc=reservoir_qc, encoding_qc=encoding_qc
+        )
+
+        assert isinstance(qc.quantum_circuit, QuantumCircuit)
+        assert qc.quantum_circuit.num_qubits == 4
+        assert len(qc.quantum_circuit.parameters) == 4
 
 
 @pytest.fixture
 def dataset(config: dict) -> Tuple[npt.NDArray, npt.NDArray]:
     hm = data.HiddenManifold(
         data_path=config["datasets"]["hidden-manifold"]["data_path"],
-        dim=8,
+        dim=4,
         diff=False,
     )
     return hm.get_train()
