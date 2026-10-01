@@ -1,4 +1,4 @@
-base_seed: &MY_SEED 42
+seed: 42
 
 datasets:
   hidden-manifold:
@@ -8,7 +8,6 @@ datasets:
 
 feature_extractor:
   measure: False
-  seed: *MY_SEED
   num_qubits: 8
   depth: 5
   feature_dimension: 4
@@ -16,7 +15,6 @@ feature_extractor:
 training:
   solver: "adam"
   hidden_layer_sizes: []
-  random_state: *MY_SEED
   max_iter: 300
   learning_rate: "constant"
   learning_rate_init: 0.01
