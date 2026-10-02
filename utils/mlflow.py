@@ -90,15 +90,3 @@ def log_metrics(results: Dict[str, Any]) -> None:
             # Per Fold
             for fold_idx, val in enumerate(values):
                 metrics[f"{name}_fold_{fold_idx}"] = val
-
-
-# def log_model(
-#     trainer: BaseTraining,
-#     model: BaseMLPModel,
-#     dataset: BaseDataset,
-#     model_name: str = "model",
-# ) -> None:
-#     signature = infer_signature(
-#         dataset.val_data, trainer.predict(model, dataset)
-#     )
-#     trainer.log_model(model=model, model_name=model_name, signature=signature)
