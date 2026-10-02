@@ -10,15 +10,17 @@ import models.extractors.reservoir as res
 
 
 class TestReservoir:
-    def test_qnode_init(
-        self,
-        dataset: Tuple[npt.NDArray, npt.NDArray],
-    ):
-        X, y = dataset
-        self.qc = res.get_angle_embedding(4)
-        assert isinstance(self.qc, qml.QNode)
-        assert len(self.qc.device.wires) == 4
-        print(qml.draw(self.qc)([1, 2, 3, 4]))
+    def test_qnode_init(self):
+        qc = res.get_angle_embedding(4)
+        assert isinstance(qc, qml.QNode)
+        assert len(qc.device.wires) == 4
+        print(qml.draw(qc)([1, 2, 3, 4]))
+
+    def test_qnode_run(self):
+        qc = res.get_angle_embedding(4)
+        result = qc([1, 2, 3, 4])
+        assert len(result) == 2**4
+        assert round(sum(result)) == 1
 
 
 @pytest.fixture
