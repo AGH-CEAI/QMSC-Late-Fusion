@@ -1,11 +1,13 @@
 from typing import List
 
+import mlflow
 from pennylane import QNode
 from sklearn.base import BaseEstimator
 from sklearn.ensemble import StackingClassifier
 from sklearn.model_selection import StratifiedKFold, cross_validate
 
 import core.pipeline_factories as pipe
+import utils.mlflow as mf
 from data.hidden_manifold import BaseDataLoader
 
 
@@ -71,13 +73,15 @@ class ExperimentRunner:
         )
 
         # Cross-validation
-        score = cross_validate(
-            estimator=ensamble,
-            X=X,
-            y=y,
-            scoring=self.config["evaluation"]["scoring"],
-            cv=cv,
-        )
+        mf.setup_mlflow(self.config["experiment_name"])
+        # mlflow.sklearn.autolog()
+        with mlflow.start_run(run_name=self.config["run_name"]) as run:
+            score = cross_validate(
+                estimator=ensamble,
+                X=X,
+                y=y,
+                scoring=self.config["evaluation"]["scoring"],
+                cv=cv,
+            )
 
-        # Log model, params and results (TODO)
         return score
