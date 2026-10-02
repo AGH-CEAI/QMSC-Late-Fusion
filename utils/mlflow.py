@@ -1,11 +1,12 @@
 import logging
 import os
 import socket
-from statistics import mean, stdev
 from typing import Any, Dict
 
 import mlflow
+import mlflow.sklearn
 import numpy as np
+from mlflow.models import infer_signature
 
 
 ################################################################################
@@ -90,3 +91,15 @@ def log_metrics(results: Dict[str, Any]) -> None:
             # Per Fold
             for fold_idx, val in enumerate(values):
                 metrics[f"{name}_fold_{fold_idx}"] = val
+
+
+################################################################################
+# MLFLOW MODEL #################################################################
+################################################################################
+
+
+def log_sk_model(model, model_name, data):
+    signature = infer_signature(data, model.predict(data))
+    mlflow.sklearn.log_model(
+        sk_model=model, name=model_name, signature=signature
+    )
