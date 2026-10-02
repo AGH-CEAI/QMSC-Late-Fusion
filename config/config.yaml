@@ -1,4 +1,6 @@
 seed: 42
+experiment_name: "QMSC_Late_Fusion"
+run_name: "Test"
 
 datasets:
   hidden-manifold:
@@ -9,7 +11,6 @@ datasets:
 feature_extractor:
   measure: False
   num_qubits: 6
-  depth: 5
   feature_dimension: 6
 
 training:
