@@ -3,11 +3,14 @@ import os
 import socket
 from statistics import mean, stdev
 from typing import Any, Dict
-import numpy as np
 
 import mlflow
+import numpy as np
 
 
+################################################################################
+# MLFLOW SETUP #################################################################
+################################################################################
 def setup_mlflow(experiment_name: str) -> None:
     mlflow.set_tracking_uri(os.environ["MLFLOW_TRACKING_URI"])
     prepare_mlflow_experiment(experiment_name)
@@ -23,7 +26,6 @@ def create_mlflow_experiment(exp_name: str) -> None:
     tags: Dict[str, Any] = {
         "project_name": "QMSC_Late_Fusion",
     }
-
     mlflow.create_experiment(
         name=exp_name,
         tags=tags,
@@ -31,6 +33,9 @@ def create_mlflow_experiment(exp_name: str) -> None:
     )
 
 
+################################################################################
+# MLFLOW PARAMS ################################################################
+################################################################################
 def log_params(params: Dict[str, Any]) -> None:
     mlflow.set_tag("hostname", socket.gethostname())
     mlflow.set_tag("model", params["experiment_params"]["model_name"])
@@ -52,6 +57,11 @@ def log_nested_params(params: Dict[str, Any]) -> None:
     mlflow.log_params(params)
 
 
+################################################################################
+# MLFLOW START RUN #############################################################
+################################################################################
+
+
 def start_parent_run(model_name: str) -> mlflow.ActiveRun:
     run = mlflow.start_run(run_name=model_name)
     return run
@@ -61,6 +71,9 @@ def start_child_hp_run(fold_name: str) -> mlflow.ActiveRun:
     return mlflow.start_run(run_name=fold_name, nested=True)
 
 
+################################################################################
+# MLFLOW METRICS ###############################################################
+################################################################################
 def log_metrics(results: Dict[str, Any]) -> None:
     metrics = {
         "mean_fit_time": np.mean(results["fit_time"]),
