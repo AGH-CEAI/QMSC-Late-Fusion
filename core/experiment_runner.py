@@ -33,18 +33,15 @@ class ExperimentRunner:
             config (dict): Configuration dictionary containing 'feature_extractor',
                            'training', and 'evaluation' settings.
         """
-        # Object fields
+
         self.data_loader = data_loader
         self.quantum_circuits = quantum_circuits
         self.classifier = classifier
         self.final_estimator = final_estimator
         self.ensamble = None
 
-        # Configuration fields
-        self.feature_extractor_config = config["feature_extractor"]
-        self.training_config = config["training"]
-        self.eval_config = config["evaluation"]
         self.seed = config["seed"]
+        self.config = config
 
     def run(self):
         """
@@ -56,7 +53,7 @@ class ExperimentRunner:
 
         # Build cross-validator
         cv = StratifiedKFold(
-            n_splits=self.training_config["n_folds"],
+            n_splits=self.config["training"]["n_folds"],
             shuffle=True,
             random_state=self.seed,
         )
@@ -69,7 +66,7 @@ class ExperimentRunner:
             estimators=estimators,
             final_estimator=self.final_estimator,
             stack_method="predict_proba",
-            n_job=-1,
+            n_jobs=-1,
             cv=cv,
         )
 
@@ -78,7 +75,7 @@ class ExperimentRunner:
             estimator=ensamble,
             X=X,
             y=y,
-            scoring=self.eval_config["scoring"],
+            scoring=self.config["evaluation"]["scoring"],
             cv=cv,
         )
 
