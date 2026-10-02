@@ -18,7 +18,7 @@ def build_estimators(
 ) -> List[Tuple[str, Pipeline]]:
     estimators = list()
     for i, qc in enumerate(quantum_circuits):
-        est = build_reservoir_estimator(qc=qc, nn=classifier)
+        est = build_reservoir_estimator(qc=qc, classifier=classifier)
         estimators.append((f"dev_{i}", est))
 
     return estimators
