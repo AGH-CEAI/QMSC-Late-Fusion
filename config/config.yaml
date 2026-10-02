@@ -3,14 +3,14 @@ seed: 42
 datasets:
   hidden-manifold:
     data_path: "datasets/hidden-manifold/"
-    dim: 8
+    dim: 6
     diff: False
 
 feature_extractor:
   measure: False
-  num_qubits: 8
+  num_qubits: 6
   depth: 5
-  feature_dimension: 4
+  feature_dimension: 6
 
 training:
   solver: "adam"
