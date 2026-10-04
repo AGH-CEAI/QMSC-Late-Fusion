@@ -83,5 +83,6 @@ class ExperimentRunner:
                 scoring=self.config["evaluation"]["scoring"],
                 cv=cv,
             )
+            mf.log_cross_val_metrics(score=score)
 
         return score

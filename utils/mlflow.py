@@ -75,22 +75,21 @@ def start_child_hp_run(fold_name: str) -> mlflow.ActiveRun:
 ################################################################################
 # MLFLOW METRICS ###############################################################
 ################################################################################
-def log_metrics(results: Dict[str, Any]) -> None:
-    metrics = {
-        "mean_fit_time": np.mean(results["fit_time"]),
-        "mean_score_time": np.mean(results["score_time"]),
-    }
-
-    for key, values in results.items():
+def log_cross_val_metrics(score: Dict[str, Any]) -> None:
+    metrics = {}
+    for key, values in score.items():
         if key.startswith("test_"):
             name = key.replace("test_", "")
+        else:
+            name = key
 
-            # Mean
-            metrics[f"mean_{name}"] = np.mean(values)
+        # Mean
+        metrics[f"mean_{name}"] = np.mean(values)
 
-            # Per Fold
-            for fold_idx, val in enumerate(values):
-                metrics[f"{name}_fold_{fold_idx}"] = val
+        # Per Fold
+        for fold_idx, val in enumerate(values):
+            metrics[f"{name}_fold_{fold_idx + 1}"] = val
+    mlflow.log_metrics(metrics=metrics)
 
 
 ################################################################################
