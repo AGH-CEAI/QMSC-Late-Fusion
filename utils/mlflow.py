@@ -1,4 +1,3 @@
-import logging
 import os
 import socket
 from typing import Any, Dict
@@ -6,7 +5,9 @@ from typing import Any, Dict
 import mlflow
 import mlflow.sklearn
 import numpy as np
+import pandas as pd
 from mlflow.models import infer_signature
+from sklearn.metrics import get_scorer
 
 
 ################################################################################
@@ -62,8 +63,8 @@ def start_parent_run(model_name: str) -> mlflow.ActiveRun:
     return run
 
 
-def start_child_hp_run(fold_name: str) -> mlflow.ActiveRun:
-    return mlflow.start_run(run_name=fold_name, nested=True)
+def start_child_hp_run(child_run_name: str) -> mlflow.ActiveRun:
+    return mlflow.start_run(run_name=child_run_name, nested=True)
 
 
 ################################################################################
@@ -84,6 +85,30 @@ def log_cross_val_metrics(score: Dict[str, Any]) -> None:
         for fold_idx, val in enumerate(values):
             metrics[f"{name}_fold_{fold_idx + 1}"] = val
     mlflow.log_metrics(metrics=metrics)
+
+
+def evaluate_model(model, X_test, y_test):
+    signature = infer_signature(X_test, model.predict(X_test))
+    mlflow.sklearn.log_model(
+        sk_model=model,
+        artifact_path="model",
+        signature=signature,
+        serialization_format="cloudpickle",
+    )
+
+    y_pred = model.predict(X_test)
+
+    eval_data = pd.DataFrame(X_test)
+    eval_data["label"] = y_test
+    eval_data["prediction"] = y_pred
+
+    mlflow.models.evaluate(
+        model=None,
+        data=eval_data,
+        targets="label",
+        predictions="prediction",
+        model_type="classifier",
+    )
 
 
 ################################################################################

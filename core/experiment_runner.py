@@ -51,6 +51,7 @@ class ExperimentRunner:
         """
         # Load data
         X, y = self.data_loader.get_train()
+        X_test, y_test = self.data_loader.get_test()
 
         # Build cross-validator
         cv = StratifiedKFold(
@@ -84,5 +85,8 @@ class ExperimentRunner:
             )
             mf.log_cross_val_metrics(score=score)
             mf.log_params(config=self.config)
+
+            ensamble.fit(X, y)
+            mf.evaluate_model(model=ensamble, X_test=X_test, y_test=y_test)
 
         return score
