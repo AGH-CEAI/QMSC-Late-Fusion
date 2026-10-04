@@ -37,25 +37,19 @@ def create_mlflow_experiment(exp_name: str) -> None:
 ################################################################################
 # MLFLOW PARAMS ################################################################
 ################################################################################
-def log_params(params: Dict[str, Any]) -> None:
+
+
+def log_params(config: Dict[str, Any]) -> None:
+    def log_nested_params(conf_dict, prefix=""):
+        for key, value in conf_dict.items():
+            if isinstance(value, dict):
+                log_nested_params(value, f"{prefix}{key}.")
+            else:
+                mlflow.log_param(key=f"{prefix}{key}", value=value)
+
     mlflow.set_tag("hostname", socket.gethostname())
-    mlflow.set_tag("model", params["experiment_params"]["model_name"])
-    for _, value in params.items():
-        log_nested_params(value)
-
-
-def log_nested_params(params: Dict[str, Any]) -> None:
-    # Remove duplicate, if they happend to
-    for k in mlflow.get_run(
-        mlflow.active_run().info.run_id
-    ).data.params.keys():  # type: ignore
-        if k in params.keys():
-            logging.warning(
-                f"Parameter {k} already logged, skipping duplicate."
-            )
-            params.pop(k)
-
-    mlflow.log_params(params)
+    mlflow.set_tag("model_name", config["model_name"])
+    log_nested_params(config)
 
 
 ################################################################################

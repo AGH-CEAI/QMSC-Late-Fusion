@@ -32,8 +32,7 @@ class ExperimentRunner:
             quantum_circuits (List[QNode]): List of quantum circuits for feature extraction.
             classifier (BaseEstimator): A scikit-learn compatible base classifier.
             final_estimator (BaseEstimator): A scikit-learn compatible final estimator for the stacking ensemble.
-            config (dict): Configuration dictionary containing 'feature_extractor',
-                           'training', and 'evaluation' settings.
+            config (dict): Configuration dictionary
         """
 
         self.data_loader = data_loader
@@ -84,5 +83,6 @@ class ExperimentRunner:
                 cv=cv,
             )
             mf.log_cross_val_metrics(score=score)
+            mf.log_params(config=self.config)
 
         return score
