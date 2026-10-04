@@ -19,6 +19,9 @@ class HiddenManifold(BaseDataLoader):
     def get_train(self) -> Tuple[npt.NDArray, npt.NDArray]:
         return self.x_train, self.y_train
 
+    def get_test(self) -> Tuple[npt.NDArray, npt.NDArray]:
+        return self.x_test, self.y_test
+
     # Private methods
     def _build_manifold_datafile_name(self, dim: int, diff: bool) -> str:
         """
