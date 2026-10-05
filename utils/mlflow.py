@@ -91,7 +91,7 @@ def evaluate_model(model, X_test, y_test):
     signature = infer_signature(X_test, model.predict(X_test))
     mlflow.sklearn.log_model(
         sk_model=model,
-        artifact_path="model",
+        name="model",
         signature=signature,
         serialization_format="cloudpickle",
     )
