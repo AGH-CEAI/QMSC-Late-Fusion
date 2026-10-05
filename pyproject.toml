@@ -20,4 +20,5 @@ dependencies = [
     "qiskit>=2.5.2",
     "scikit-learn>=1.9.1",
     "scipy>=1.18.1",
+    "shap>=0.52.0",
 ]
