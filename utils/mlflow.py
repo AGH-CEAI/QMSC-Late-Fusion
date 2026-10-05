@@ -102,6 +102,7 @@ def evaluate_model(model, X_test, y_test):
     eval_data["label"] = y_test
     eval_data["prediction"] = y_pred
 
+    mlflow.log_params(model.get_params())
     mlflow.models.evaluate(
         model=None,
         data=eval_data,
