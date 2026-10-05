@@ -44,6 +44,12 @@ class ExperimentRunner:
         self.seed = config["seed"]
         self.config = config
 
+        # Logging
+        config["reservoir"]["classifier"] = classifier.__class__.__name__
+        config["reservoir"]["final_estimator"] = (
+            final_estimator.__class__.__name__
+        )
+
     def run(self):
         """
         Runs the full experiment pipeline: loads data, builds the multisource

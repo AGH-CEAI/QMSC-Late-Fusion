@@ -1,4 +1,5 @@
 import pennylane as qml
+import sklearn as sk
 from sklearn.neural_network import MLPClassifier
 
 from core.experiment_runner import ExperimentRunner
@@ -34,9 +35,14 @@ def get_random_qc_(config: dict):
     )
 
 
-def checks(config):
-    print(qml.draw(get_random_qc_(config))([1, 2, 3, 4, 5, 6]))
-    print(get_random_qc_(config)([1, 2, 3, 4, 5, 6]))
+def get_dataloader_(config):
+    data_loader_config = config["datasets"]["hidden-manifold"]
+
+    return HiddenManifold(
+        data_path=data_loader_config["data_path"],
+        dim=data_loader_config["dim"],
+        diff=data_loader_config["diff"],
+    )
 
 
 ################################################################################
@@ -45,23 +51,13 @@ def checks(config):
 
 
 def single_dev_noiseless_exp(config: dict):
-    data_loader_config = config["datasets"]["hidden-manifold"]
-
-    data_loader = HiddenManifold(
-        data_path=data_loader_config["data_path"],
-        dim=data_loader_config["dim"],
-        diff=data_loader_config["diff"],
-    )
-
-    quantum_circuits = [get_angle_embedding(data_loader_config["dim"])]
-
-    classifier = get_classifier_(config)
+    quantum_circuits = [get_angle_embedding(config["reservoir"]["num_qubits"])]
 
     exp = ExperimentRunner(
-        data_loader=data_loader,
+        data_loader=get_dataloader_(),
         quantum_circuits=quantum_circuits,
-        classifier=classifier,
-        final_estimator=classifier,
+        classifier=get_classifier_(config),
+        final_estimator=get_classifier_(config),
         config=config,
     )
 
@@ -70,25 +66,56 @@ def single_dev_noiseless_exp(config: dict):
 
 
 def single_dev_random_noiseless_exp(config: dict):
-    data_loader_config = config["datasets"]["hidden-manifold"]
-
-    data_loader = HiddenManifold(
-        data_path=data_loader_config["data_path"],
-        dim=data_loader_config["dim"],
-        diff=data_loader_config["diff"],
-    )
-
     quantum_circuits = [get_random_qc_(config)]
 
-    classifier = get_classifier_(config)
-
     exp = ExperimentRunner(
-        data_loader=data_loader,
+        data_loader=get_dataloader_(config),
         quantum_circuits=quantum_circuits,
-        classifier=classifier,
-        final_estimator=classifier,
+        classifier=get_classifier_(config),
+        final_estimator=get_classifier_(config),
         config=config,
     )
 
+    score = exp.run()
+    print(score["test_accuracy"])
+
+
+def different_classifiers_exp(config: dict):
+    quantum_circuits = [get_random_qc_(config)]
+
+    classifiers = [
+        get_classifier_(config),
+        sk.svm.SVC(
+            kernel="rbf", probability=True, random_state=config["seed"]
+        ),
+        sk.tree.DecisionTreeClassifier(random_state=config["seed"]),
+    ]
+
+    for classifier in classifiers:
+        exp = ExperimentRunner(
+            data_loader=get_dataloader_(config),
+            quantum_circuits=quantum_circuits,
+            classifier=classifier,
+            final_estimator=classifier,
+            config=config,
+        )
+        score = exp.run()
+    print(score["test_accuracy"])
+
+
+def svc_classifiers_exp(config: dict):
+    quantum_circuits = [get_random_qc_(config)]
+
+    exp = ExperimentRunner(
+        data_loader=get_dataloader_(config),
+        quantum_circuits=quantum_circuits,
+        classifier=get_classifier_(config),
+        final_estimator=sk.svm.SVC(
+            kernel="rbf",
+            random_state=config["seed"],
+            max_iter=config["training"]["max_iter"],
+        ),
+        config=config,
+    )
     score = exp.run()
     print(score["test_accuracy"])
