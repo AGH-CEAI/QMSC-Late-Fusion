@@ -16,7 +16,7 @@ def get_angle_embedding(n_features: int) -> qml.QNode:
 def get_random_qc(n_features: int, depth: int, dev, seed: int) -> qml.QNode:
     # Generate static random weights
     shape = qml.RandomLayers.shape(n_layers=depth, n_rotations=n_features)
-    weights = np.random.random(size=shape)
+    weights = np.random.random(size=shape, seed=seed)
 
     @qml.qnode(dev)
     def circuit(X):
