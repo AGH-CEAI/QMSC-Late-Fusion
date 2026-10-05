@@ -21,7 +21,7 @@ def get_random_qc(n_features: int, depth: int, dev, seed: int) -> qml.QNode:
     @qml.qnode(dev)
     def circuit(X):
         qml.AngleEmbedding(X, wires=range(n_features))
-        qml.RandomLayers(weights=weights, wires=n_features, seed=seed)
+        qml.RandomLayers(weights=weights, wires=range(n_features), seed=seed)
         return qml.probs(wires=range(n_features))
 
     return circuit
