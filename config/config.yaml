@@ -1,7 +1,7 @@
 seed: 42
 experiment_name: "QMSC_Late_Fusion"
-run_name: "Test"
-model_name: "Test"
+run_name: "Single Noiseless"
+model_name: "random_single_noisless" # <q layers type>_<n devices>_<noise apply strategy>
 
 datasets:
   hidden-manifold:
@@ -11,9 +11,11 @@ datasets:
 
 reservoir:
   num_qubits: 6
+  depth: 2
 
 training:
   solver: "adam"
+  activation: "logistic" # {'logistic', 'relu', 'identity', 'tanh'}
   hidden_layer_sizes: []
   max_iter: 300
   learning_rate: "constant"
