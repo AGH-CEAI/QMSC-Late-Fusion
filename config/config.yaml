@@ -1,6 +1,6 @@
 seed: 42
 experiment_name: "QMSC_Late_Fusion"
-run_name: "Single Noiseless"
+run_name: "Noiseless svc"
 model_name: "random_single_noisless" # <q layers type>_<n devices>_<noise apply strategy>
 
 datasets:
@@ -11,7 +11,9 @@ datasets:
 
 reservoir:
   num_qubits: 6
-  depth: 2
+  depth: 5
+  classifier: ""
+  final_estimator: ""
 
 training:
   solver: "adam"
