@@ -15,6 +15,9 @@ class HiddenManifold(BaseDataLoader):
         self.x_train, self.y_train, self.x_test, self.y_test = (
             self._get_manifold(data_path, dim, diff)
         )
+        # Map labels -1 to 0
+        self.y_train = np.where(self.y_train == -1, 0, self.y_train)
+        self.y_test = np.where(self.y_test == -1, 0, self.y_test)
 
     def get_train(self) -> Tuple[npt.NDArray, npt.NDArray]:
         return self.x_train, self.y_train
