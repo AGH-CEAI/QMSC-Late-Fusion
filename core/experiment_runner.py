@@ -70,7 +70,7 @@ class ExperimentRunner:
         estimators = pipe.build_estimators(
             quantum_circuits=self.quantum_circuits, classifier=self.classifier
         )
-        ensamble = StackingClassifier(
+        self.ensamble = StackingClassifier(
             estimators=estimators,
             final_estimator=self.final_estimator,
             stack_method="predict_proba",
@@ -83,7 +83,7 @@ class ExperimentRunner:
         # mlflow.sklearn.autolog()
         with mlflow.start_run(run_name=self.config["run_name"]) as run:
             score = cross_validate(
-                estimator=ensamble,
+                estimator=self.ensamble,
                 X=X,
                 y=y,
                 scoring=self.config["evaluation"]["scoring"],
@@ -92,7 +92,9 @@ class ExperimentRunner:
             mf.log_cross_val_metrics(score=score)
             mf.log_params(config=self.config)
 
-            ensamble.fit(X, y)
-            mf.evaluate_model(model=ensamble, X_test=X_test, y_test=y_test)
+            self.ensamble.fit(X, y)
+            mf.evaluate_model(
+                model=self.ensamble, X_test=X_test, y_test=y_test
+            )
 
         return score
