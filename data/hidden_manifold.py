@@ -9,7 +9,12 @@ from data.base import BaseDataLoader
 
 
 class HiddenManifold(BaseDataLoader):
-    def __init__(self, data_path: str, dim: int = 10, diff: bool = False):
+    def __init__(
+        self,
+        data_path: str = "datasets/hidden-manifold/",
+        dim: int = 6,
+        diff: bool = False,
+    ):
         super().__init__()
 
         self.x_train, self.y_train, self.x_test, self.y_test = (
