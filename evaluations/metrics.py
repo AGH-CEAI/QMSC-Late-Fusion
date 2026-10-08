@@ -1,12 +1,11 @@
 from itertools import combinations
 
 import numpy as np
-from qiskit import QuantumCircuit
-from qiskit.quantum_info import Statevector
+import pennylane as qml
 
 
 def quantum_circuit_expressibility(
-    circuit: QuantumCircuit, param_ranges: list, num_samples: int = 50
+    circuit, param_ranges: list, num_samples: int = 50
 ):
     """
     Quantum Circuit Expressibility (QCE).
@@ -22,7 +21,7 @@ def quantum_circuit_expressibility(
     Source: https://gitlab.com/illesova.silvie.scholar/qmetric/-/blob/main/qmetric/quantum_circuit_metrics.py?ref_type=heads
 
     Parameters:
-    - circuit: parameterized QuantumCircuit.
+    - circuit: parameterized QNode.
     - param_ranges: list of (low, high) for each parameter.
     - num_samples: number of parameter samples to draw.
 
@@ -34,12 +33,11 @@ def quantum_circuit_expressibility(
         param_values = [
             np.random.uniform(low, high) for low, high in param_ranges
         ]
-        bound_circuit = circuit.assign_parameters(param_values)
-        state = Statevector.from_instruction(bound_circuit)
+        state = circuit(param_values)
         states.append(state)
 
     overlaps = [
-        np.abs(s1.data.conj().dot(s2.data)) ** 2
+        qml.math.fidelity_statevector(s1, s2)
         for s1, s2 in combinations(states, 2)
     ]
     N = num_samples
