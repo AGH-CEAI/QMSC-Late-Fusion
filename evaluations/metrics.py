@@ -42,3 +42,28 @@ def quantum_circuit_expressibility(
     ]
     N = num_samples
     return 1 - (sum(overlaps) / (N * (N - 1)))
+
+
+def quantum_output_sensitivity(fx, fx_eps, eps):
+    """
+    Quantum Output Sensitivity (QOS).
+
+    Measures how sensitive the quantum model is to small input perturbations.
+
+    Defined as:
+    \[
+    \text{QOS} = \mathbb{E} \left[ \frac{\|f(x + \epsilon) - f(x)\|^2}{\|\epsilon\|^2} \right]
+    \]
+
+    Parameters:
+    - fx (np.ndarray): Quantum model outputs for original inputs.
+    - fx_eps (np.ndarray): Outputs after applying perturbation.
+    - eps (np.ndarray): Perturbation vectors.
+
+    Returns:
+    - float: QOS value. Higher indicates more sensitivity to input changes.
+    """
+    norms = np.linalg.norm(eps, axis=1) ** 2
+    diffs = np.linalg.norm(fx_eps - fx, axis=1) ** 2
+    ratios = diffs / norms
+    return np.mean(ratios)
