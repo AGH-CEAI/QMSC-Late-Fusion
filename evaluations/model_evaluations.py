@@ -3,6 +3,12 @@ import pennylane as qml
 import pennylane.numpy as np
 import sklearn.preprocessing as pre
 from sklearn.decomposition import PCA
+from sklearn.metrics import (
+    accuracy_score,
+    davies_bouldin_score,
+    silhouette_score,
+)
+from sklearn.svm import SVC, LinearSVC
 
 from data.hidden_manifold import HiddenManifold
 from models.extractors.reservoir import get_random_qc
@@ -91,3 +97,65 @@ def show_histogram():
         axs[1, i].hist(x_normal[:, i], bins=n_bins)
 
     plt.show()
+
+
+def compare_separability(config):
+    hm = HiddenManifold()
+    x, y = hm.get_train()
+    x_test, y_test = hm.get_test()
+
+    scaler = pre.MinMaxScaler(feature_range=(-np.pi / 2, np.pi / 2))
+    x_scaled = scaler.fit_transform(x)
+    x_test_scaled = scaler.transform(x_test)
+
+    qt = pre.QuantileTransformer(output_distribution="normal")
+    x_norm_scaled = scaler.fit_transform(qt.fit_transform(x))
+    x_test_norm_scaled = scaler.transform(qt.fit_transform(x_test))
+
+    # model = LinearSVC(random_state=42, max_iter=300, dual="auto")
+    model = SVC(random_state=42, max_iter=1000)
+
+    model.fit(x, y)
+    acc = accuracy_score(y_test, model.predict(x_test))
+    print(f"Raw data: {acc}")
+
+    model.fit(x_scaled, y)
+    acc = accuracy_score(y_test, model.predict(x_test_scaled))
+    print(f"Scaled data: {acc}")
+
+    model.fit(x_norm_scaled, y)
+    acc = accuracy_score(y_test, model.predict(x_test_norm_scaled))
+    print(f"Norm. distr. scaled data: {acc}")
+
+    dev = qml.device("default.qubit", wires=config["reservoir"]["num_qubits"])
+    for i, depth in enumerate(range(0, 8, 1)):
+        qc = get_random_qc(
+            n_features=config["reservoir"]["num_qubits"],
+            depth=depth,
+            dev=dev,
+            seed=config["seed"],
+        )
+
+        probs = qc(x)
+        probs_test = qc(x_test)
+
+        probs_scaled = qc(x_scaled)
+        probs_test_scaled = qc(x_test_scaled)
+
+        probs_norm = qc(x_norm_scaled)
+        probs_test_norm = qc(x_test_norm_scaled)
+
+        print(
+            f"\n----------------- Random Layers: {depth} --------------------------"
+        )
+        model.fit(probs, y)
+        acc = accuracy_score(y_test, model.predict(probs_test))
+        print(f"Raw data: {acc}")
+
+        model.fit(probs_scaled, y)
+        acc = accuracy_score(y_test, model.predict(probs_test_scaled))
+        print(f"Scaled data: {acc}")
+
+        model.fit(probs_norm, y)
+        acc = accuracy_score(y_test, model.predict(probs_test_norm))
+        print(f"Norm. distr. scaled data: {acc}")
