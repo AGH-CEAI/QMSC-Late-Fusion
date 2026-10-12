@@ -4,8 +4,10 @@ import pennylane.numpy as np
 import sklearn.preprocessing as pre
 from sklearn.decomposition import PCA
 from sklearn.metrics import accuracy_score
+from sklearn.pipeline import make_pipeline
 from sklearn.svm import SVC, LinearSVC
 
+from data.base import BaseDataLoader
 from data.hidden_manifold import HiddenManifold
 from evaluations.metrics import (
     quantum_circuit_expressibility,
@@ -99,37 +101,22 @@ def show_histogram():
     plt.show()
 
 
-def compare_separability(config):
-    # Get data
-    hm = HiddenManifold()
-    x, y = hm.get_train()
-    x_test, y_test = hm.get_test()
+def check_separability(
+    config, dataloader: BaseDataLoader, preprocessor, classifier
+):
+    x_train, y_train = dataloader.get_train()
+    x_test, y_test = dataloader.get_test()
 
-    # Set preprocessors
-    scaler = pre.MinMaxScaler(feature_range=(-np.pi / 2, np.pi / 2))
-    x_scaled = scaler.fit_transform(x)
-    x_test_scaled = scaler.transform(x_test)
+    if preprocessor:
+        x_train_scaled = preprocessor.fit_transform(x_train)
+        x_test_scaled = preprocessor.transform(x_test)
+    else:
+        x_train_scaled = x_train
+        x_test_scaled = x_test
 
-    qt = pre.QuantileTransformer(output_distribution="normal")
-    x_norm_scaled = scaler.fit_transform(qt.fit_transform(x))
-    x_test_norm_scaled = scaler.transform(qt.fit_transform(x_test))
-
-    # Build model
-    # model = LinearSVC(random_state=42, max_iter=300, dual="auto")
-    model = SVC(random_state=42, max_iter=1000)
-
-    # Get classical predictions
-    model.fit(x, y)
-    acc = accuracy_score(y_test, model.predict(x_test))
-    print(f"Raw data: {acc}")
-
-    model.fit(x_scaled, y)
-    acc = accuracy_score(y_test, model.predict(x_test_scaled))
-    print(f"Scaled data: {acc}")
-
-    model.fit(x_norm_scaled, y)
-    acc = accuracy_score(y_test, model.predict(x_test_norm_scaled))
-    print(f"Norm. distr. scaled data: {acc}")
+    classifier.fit(x_train_scaled, y_train)
+    acc = accuracy_score(y_test, classifier.predict(x_test_scaled))
+    print(f"No QC: {acc}")
 
     # Get quantum-classical predictions
     dev = qml.device("default.qubit", wires=config["reservoir"]["num_qubits"])
@@ -141,20 +128,42 @@ def compare_separability(config):
             seed=config["seed"],
         )
 
-        print(
-            f"\n----------------- Random Layers: {depth} --------------------------"
-        )
-        model.fit(qc(x), y)
-        acc = accuracy_score(y_test, model.predict(qc(x_test)))
-        print(f"Raw data: {acc}")
+        classifier.fit(qc(x_train_scaled), y_train)
+        acc = accuracy_score(y_test, classifier.predict(qc(x_test_scaled)))
+        print(f"Random layers {depth}: {acc}")
 
-        model.fit(qc(x_scaled), y)
-        acc = accuracy_score(y_test, model.predict(qc(x_test_scaled)))
-        print(f"Scaled data: {acc}")
 
-        model.fit(qc(x_norm_scaled), y)
-        acc = accuracy_score(y_test, model.predict(qc(x_test_norm_scaled)))
-        print(f"Norm. distr. scaled data: {acc}")
+def compare_separability(config):
+    # Get data
+    hm = HiddenManifold()
+
+    # Set preprocessors
+    minmax = make_pipeline(
+        pre.MinMaxScaler(feature_range=(-np.pi / 2, np.pi / 2))
+    )
+    qt = make_pipeline(
+        pre.QuantileTransformer(output_distribution="normal"),
+        pre.MinMaxScaler(feature_range=(-np.pi / 2, np.pi / 2)),
+    )
+
+    # Build classifiers
+    lin_model = LinearSVC(random_state=42, max_iter=1000, dual="auto")
+    rbf_model = SVC(random_state=42, max_iter=1000)
+    pca_lin_model = make_pipeline(PCA(n_components=3), lin_model)
+
+    # Run tests
+    print("\n\n###### MINMAX-QC-LINEAR ######")
+    check_separability(
+        config=config, dataloader=hm, preprocessor=minmax, classifier=lin_model
+    )
+    print("\n\n###### NORMAL-MINMAX-QC-LINEAR ######")
+    check_separability(config, hm, qt, lin_model)
+    print("\n\n###### NONE-QC-PCA-LINEAR ######")
+    check_separability(config, hm, None, pca_lin_model)
+    print("\n\n###### MINMAX-QC-PCA-LINEAR ######")
+    check_separability(config, hm, minmax, pca_lin_model)
+    print("\n\n###### NORMAL-MINMAX-QC-PCA-LINEAR ######")
+    check_separability(config, hm, qt, pca_lin_model)
 
 
 def compare_preds(config):
