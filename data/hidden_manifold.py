@@ -119,7 +119,7 @@ class HiddenManifold(BaseDataLoader):
                 f"dim needs to be in range 2–20, but instead it is {dim}."
             )
         filename = self._build_manifold_datafile_name(dim=dim, diff=diff)
-        full_filepath = "datasets/hidden-manifold/" + filename
+        full_filepath = data_path + filename
         if os.path.exists(full_filepath):
             x_train, y_train, x_test, y_test = self._manifold_load(
                 full_filepath
