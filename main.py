@@ -9,7 +9,9 @@ def main():
         config = yaml.safe_load(f)
 
     # eval.plot_compare_plots(config)
-    eval.show_histogram()
+    # eval.show_histogram()
+    eval.compare_separability(config)
+    # eval.test_qce(config)
 
 
 if __name__ == "__main__":
