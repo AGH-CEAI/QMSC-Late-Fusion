@@ -9,6 +9,8 @@ from sklearn.svm import SVC, LinearSVC
 
 from data.base import BaseDataLoader
 from data.hidden_manifold import HiddenManifold
+from data.moons import Moons
+from evaluations.helpers import plot_training_data_with_decision_boundary
 from evaluations.metrics import (
     quantum_circuit_expressibility,
     quantum_output_sensitivity,
@@ -24,7 +26,9 @@ def plot_pca(n_components, features, labels):
 
 
 def plot_compare_plots(config):
-    hm = HiddenManifold()
+    # hm = HiddenManifold()
+    hm = Moons(n_samples=300, noise=0.1)
+
     x, y = hm.get_train()
     fig, axs = plt.subplots(3, 5)
     fig.suptitle(
@@ -48,9 +52,12 @@ def plot_compare_plots(config):
     qt = pre.QuantileTransformer(output_distribution="normal")
     x_norm_dist = scaler.fit_transform(qt.fit_transform(x_scaled))
 
-    x_raw_sc = PCA(n_components=2).fit_transform(x_scaled)
-    x_raw = PCA(n_components=2).fit_transform(x)
-    x_raw_qt = PCA(n_components=2).fit_transform(x_norm_dist)
+    # x_raw_sc = PCA(n_components=2).fit_transform(x_scaled)
+    # x_raw = PCA(n_components=2).fit_transform(x)
+    # x_raw_qt = PCA(n_components=2).fit_transform(x_norm_dist)
+    x_raw_sc = x_scaled
+    x_raw = x
+    x_raw_qt = x_norm_dist
 
     axs[0, 0].set_title("Raw input")
     axs[0, 0].scatter(x_raw[:, 0], x_raw[:, 1], c=y)
@@ -69,9 +76,12 @@ def plot_compare_plots(config):
         # fig_qc, ax = qml.draw_mpl(qc, level="device")(x_scaled[0])
         # fig_qc.suptitle(f"Random Layers = {depth}", fontsize="xx-large")
 
-        x_qc = PCA(n_components=2).fit_transform(qc(x))
-        x_qc_sc = PCA(n_components=2).fit_transform(qc(x_scaled))
-        x_qc_norm = PCA(n_components=2).fit_transform(qc(x_norm_dist))
+        # x_qc = PCA(n_components=2).fit_transform(qc(x))
+        # x_qc_sc = PCA(n_components=2).fit_transform(qc(x_scaled))
+        # x_qc_norm = PCA(n_components=2).fit_transform(qc(x_norm_dist))
+        x_qc = qc(x)
+        x_qc_sc = qc(x_scaled)
+        x_qc_norm = qc(x_norm_dist)
 
         axs[0, i + 1].set_title(f"QC, random layers={depth}")
         axs[0, i + 1].scatter(x_qc[:, 0], x_qc[:, 1], c=y)
@@ -134,8 +144,8 @@ def check_separability(
 
 
 def compare_separability(config):
-    # Get data
-    hm = HiddenManifold()
+    # hm = HiddenManifold()
+    hm = Moons(n_samples=300, noise=0.1)
 
     # Set preprocessors
     minmax = make_pipeline(
@@ -158,12 +168,12 @@ def compare_separability(config):
     )
     print("\n\n###### NORMAL-MINMAX-QC-LINEAR ######")
     check_separability(config, hm, qt, lin_model)
-    print("\n\n###### NONE-QC-PCA-LINEAR ######")
-    check_separability(config, hm, None, pca_lin_model)
-    print("\n\n###### MINMAX-QC-PCA-LINEAR ######")
-    check_separability(config, hm, minmax, pca_lin_model)
-    print("\n\n###### NORMAL-MINMAX-QC-PCA-LINEAR ######")
-    check_separability(config, hm, qt, pca_lin_model)
+    # print("\n\n###### NONE-QC-PCA-LINEAR ######")
+    # check_separability(config, hm, None, pca_lin_model)
+    # print("\n\n###### MINMAX-QC-PCA-LINEAR ######")
+    # check_separability(config, hm, minmax, pca_lin_model)
+    # print("\n\n###### NORMAL-MINMAX-QC-LINEAR ######")
+    # check_separability(config, hm, qt, pca_lin_model)
 
 
 def compare_preds(config):
@@ -233,3 +243,14 @@ def test_qos(config):
             fx=qc(x), fx_eps=qc(x + epsilon), eps=epsilon
         )
         print(f"depth: {depth}, sen: {sen}")
+
+
+def draw_decision_boundary():
+    moons = Moons(n_samples=300, noise=0.1)
+    X, y = moons.get_train()
+    plot_training_data_with_decision_boundary(
+        X=X,
+        y=y,
+        kernel="linear",
+    )
+    plt.show()

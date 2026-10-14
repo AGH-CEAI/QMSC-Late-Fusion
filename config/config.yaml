@@ -10,7 +10,7 @@ datasets:
     diff: False
 
 reservoir:
-  num_qubits: 6
+  num_qubits: 2
   depth: 5
   classifier: ""
   final_estimator: ""
