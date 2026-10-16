@@ -15,7 +15,10 @@ from evaluations.metrics import (
     quantum_circuit_expressibility,
     quantum_output_sensitivity,
 )
-from models.extractors.reservoir import get_random_qc
+from models.extractors.reservoir import (
+    get_random_qc,
+    get_random_qc_local_expvals,
+)
 
 
 def plot_pca(n_components, features, labels):
@@ -26,11 +29,11 @@ def plot_pca(n_components, features, labels):
 
 
 def plot_compare_plots(config):
-    # hm = HiddenManifold()
-    hm = Moons(n_samples=300, noise=0.1)
+    hm = HiddenManifold(dim=10)
+    # hm = Moons(n_samples=300, noise=0.1)
 
     x, y = hm.get_train()
-    fig, axs = plt.subplots(3, 5)
+    fig, axs = plt.subplots(3, 5, sharey=True)
     fig.suptitle(
         "First 2 PCA components: Raw data vs. Quantum circuit probs",
         weight="bold",
@@ -60,12 +63,12 @@ def plot_compare_plots(config):
     x_raw_qt = x_norm_dist
 
     axs[0, 0].set_title("Raw input")
-    axs[0, 0].scatter(x_raw[:, 0], x_raw[:, 1], c=y)
-    axs[1, 0].scatter(x_raw_sc[:, 0], x_raw_sc[:, 1], c=y)
-    axs[2, 0].scatter(x_raw_qt[:, 0], x_raw_qt[:, 1], c=y)
+    # axs[0, 0].scatter(x_raw[:, 0], x_raw[:, 1], c=y)
+    # axs[1, 0].scatter(x_raw_sc[:, 0], x_raw_sc[:, 1], c=y)
+    # axs[2, 0].scatter(x_raw_qt[:, 0], x_raw_qt[:, 1], c=y)
 
     dev = qml.device("default.qubit", wires=config["reservoir"]["num_qubits"])
-    for i, depth in enumerate(range(0, 4, 1)):
+    for i, depth in enumerate(range(0, 8, 2)):
         qc = get_random_qc(
             n_features=config["reservoir"]["num_qubits"],
             depth=depth,
@@ -130,22 +133,24 @@ def check_separability(
 
     # Get quantum-classical predictions
     dev = qml.device("default.qubit", wires=config["reservoir"]["num_qubits"])
-    for i, depth in enumerate(range(0, 25, 3)):
+    depths = range(0, 25, 3)
+    for i, depth in enumerate(depths):
         qc = get_random_qc(
             n_features=config["reservoir"]["num_qubits"],
             depth=depth,
             dev=dev,
             seed=config["seed"],
         )
-
+        print(x_train_scaled.shape)
+        print(x_test_scaled.shape)
         classifier.fit(qc(x_train_scaled), y_train)
         acc = accuracy_score(y_test, classifier.predict(qc(x_test_scaled)))
         print(f"Random layers {depth}: {acc}")
 
 
 def compare_separability(config):
-    # hm = HiddenManifold()
-    hm = Moons(n_samples=300, noise=0.1)
+    hm = HiddenManifold(dim=10)
+    # hm = Moons(n_samples=3000, noise=0.5)
 
     # Set preprocessors
     minmax = make_pipeline(
@@ -166,8 +171,8 @@ def compare_separability(config):
     check_separability(
         config=config, dataloader=hm, preprocessor=minmax, classifier=lin_model
     )
-    print("\n\n###### NORMAL-MINMAX-QC-LINEAR ######")
-    check_separability(config, hm, qt, lin_model)
+    # print("\n\n###### NORMAL-MINMAX-QC-LINEAR ######")
+    # check_separability(config, hm, qt, lin_model)
     # print("\n\n###### NONE-QC-PCA-LINEAR ######")
     # check_separability(config, hm, None, pca_lin_model)
     # print("\n\n###### MINMAX-QC-PCA-LINEAR ######")
