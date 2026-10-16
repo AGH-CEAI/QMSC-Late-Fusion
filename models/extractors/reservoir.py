@@ -41,3 +41,19 @@ def get_random_qc_state(
         return qml.state()
 
     return circuit
+
+
+def get_random_qc_local_expvals(
+    n_features: int, depth: int, dev, seed: int
+) -> qml.QNode:
+    # Generate static random weights
+    shape = qml.RandomLayers.shape(n_layers=depth, n_rotations=n_features)
+    weights = np.random.default_rng(seed=seed).random(size=shape)
+
+    @qml.qnode(dev)
+    def circuit(X):
+        qml.AngleEmbedding(X, wires=range(n_features))
+        qml.RandomLayers(weights=weights, wires=range(n_features), seed=seed)
+        return [qml.expval(qml.PauliZ(i)) for i in range(n_features)]
+
+    return circuit
