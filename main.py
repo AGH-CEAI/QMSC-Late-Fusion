@@ -1,6 +1,6 @@
 import yaml
 
-import evaluations.model_evaluations as eval
+import evaluations.kernel_evaluations as eval
 import experiments.hidden_manifold.noiseless as exp
 
 
@@ -8,10 +8,7 @@ def main():
     with open("config/config.yaml", "r") as f:
         config = yaml.safe_load(f)
 
-    # eval.plot_compare_plots(config)
-    # eval.compare_separability(config)
-    # eval.test_qce(config)
-    eval.temp()
+    eval.svm_accuracy_check()
 
 
 if __name__ == "__main__":

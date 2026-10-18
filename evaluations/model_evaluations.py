@@ -141,15 +141,13 @@ def check_separability(
             dev=dev,
             seed=config["seed"],
         )
-        print(x_train_scaled.shape)
-        print(x_test_scaled.shape)
         classifier.fit(qc(x_train_scaled), y_train)
         acc = accuracy_score(y_test, classifier.predict(qc(x_test_scaled)))
         print(f"Random layers {depth}: {acc}")
 
 
 def compare_separability(config):
-    hm = HiddenManifold(dim=10)
+    hm = HiddenManifold(dim=6)
     # hm = Moons(n_samples=3000, noise=0.5)
 
     # Set preprocessors
