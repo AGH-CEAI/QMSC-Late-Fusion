@@ -15,7 +15,7 @@ def svm_precomputed_kernel_accuracy(data, kernel, random_state):
     svm = SVC(kernel="precomputed", random_state=random_state)
 
     kernel_matrix_train = qml.kernels.square_kernel_matrix(x_train, kernel)
-    kernel_matrix_test = qml.kernels.square_kernel_matrix(x_test, kernel)
+    kernel_matrix_test = qml.kernels.kernel_matrix(x_test, x_train, kernel)
 
     svm.fit(kernel_matrix_train, y_train)
     preds = svm.predict(kernel_matrix_test)
@@ -35,6 +35,9 @@ def svm_callable_kernel_accuracy(data, kernel, random_state):
     return accuracy_score(y_true=y_test, y_pred=preds)
 
 
+#############################################
+
+
 def svm_accuracy_check():
     data_dim = 6
     random_state = 42
@@ -52,11 +55,11 @@ def svm_accuracy_check():
         dev_amp, kernel_functions.repeated_amplitude_encoding(n_reapeats=2)
     )
 
-    kernel_ = ["rbf", angle_kernel, amplitude_kernel]
+    kernel_ = [angle_kernel, amplitude_kernel]
 
     for kernel in kernel_:
         print(
-            svm_callable_kernel_accuracy(
+            svm_precomputed_kernel_accuracy(
                 data=data, kernel=kernel, random_state=random_state
             )
         )

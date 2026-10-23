@@ -1,11 +1,10 @@
-import numpy as np
 import pennylane as qml
 
 
 def circuit_to_kernel(dev, circuit):
     """
     Takes quantum device and circuit as arguments and returns kernel function.
-    Source: https://pennylane.ai/demos/tutorial_kernel_based_training
+    Source: https://pennylane.ai/demos/tutorial_kernels_module
     """
 
     @qml.qnode(dev)
@@ -14,7 +13,7 @@ def circuit_to_kernel(dev, circuit):
         qml.adjoint(circuit)(x2, wires=dev.wires)
         return qml.probs(wires=dev.wires)
 
-    return lambda A, B: np.array([[kernel(a, b)[0] for b in B] for a in A])
+    return lambda x1, x2: kernel(x1, x2)[0]
 
 
 def repeated_amplitude_encoding(n_reapeats: int):
