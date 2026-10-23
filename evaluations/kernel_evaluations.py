@@ -40,16 +40,16 @@ def svm_accuracy_check():
     random_state = 42
     data = HiddenManifold(dim=data_dim)
 
-    dev_angle = qml.device("default.qubit", wires=data_dim)
+    dev_angle = qml.device("lightning.qubit", wires=data_dim)
 
     n_wires_amp_emb = math.ceil(math.log(data_dim, 2))
-    dev_amp = qml.device("default.qubit", wires=n_wires_amp_emb)
+    dev_amp = qml.device("lightning.qubit", wires=n_wires_amp_emb)
 
     angle_kernel = kernel_functions.circuit_to_kernel(
         dev_angle, qml.templates.AngleEmbedding
     )
     amplitude_kernel = kernel_functions.circuit_to_kernel(
-        dev_amp, qml.templates.AmplitudeEmbedding
+        dev_amp, kernel_functions.repeated_amplitude_encoding(n_reapeats=2)
     )
 
     kernel_ = ["rbf", angle_kernel, amplitude_kernel]

@@ -15,3 +15,11 @@ def circuit_to_kernel(dev, circuit):
         return qml.probs(wires=dev.wires)
 
     return lambda A, B: np.array([[kernel(a, b)[0] for b in B] for a in A])
+
+
+def repeated_amplitude_encoding(n_reapeats: int):
+    def circuit(x, wires):
+        for i in range(n_reapeats):
+            qml.AmplitudeEmbedding(x, wires, pad_with=True, normalize=True)
+
+    return circuit
