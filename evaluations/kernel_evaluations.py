@@ -69,46 +69,12 @@ def svm_accuracy_check():
     random_state = 42
     data = HiddenManifold(dim=data_dim)
 
-    dev_angle = qml.device("lightning.qubit", wires=data_dim)
+    kernels = kernel_functions.KernelFactory(data_dim=data_dim)
 
-    n_wires_amp_emb = math.ceil(math.log(data_dim, 2))
-    dev_amp = qml.device("lightning.qubit", wires=n_wires_amp_emb)
-
-    x_angle_kernel = kernel_functions.circuit_to_kernel(
-        dev_angle, qml.templates.AngleEmbedding, {"rotation": "X"}
-    )
-    y_angle_kernel = kernel_functions.circuit_to_kernel(
-        dev_angle, qml.templates.AngleEmbedding, {"rotation": "Y"}
-    )
-    amplitude_kernel = kernel_functions.circuit_to_kernel(
-        dev_amp, kernel_functions.repeated_amplitude_encoding(n_reapeats=1)
-    )
-    r2_amplitude_kernel = kernel_functions.circuit_to_kernel(
-        dev_amp, kernel_functions.repeated_amplitude_encoding(n_reapeats=2)
-    )
-    r3_amplitude_kernel = kernel_functions.circuit_to_kernel(
-        dev_amp, kernel_functions.repeated_amplitude_encoding(n_reapeats=3)
-    )
-    iqp_kernel = kernel_functions.circuit_to_kernel(
-        dev_angle, qml.IQPEmbedding
-    )
-    r2_iqp_kernel = kernel_functions.circuit_to_kernel(
-        dev_angle, qml.IQPEmbedding, {"n_repeats": 2}
-    )
-
-    kernel_ = [
-        # x_angle_kernel,
-        # y_angle_kernel,
-        # amplitude_kernel,
-        # r2_amplitude_kernel,
-        # r3_amplitude_kernel,
-        # iqp_kernel,
-        r2_iqp_kernel,
-    ]
-
-    for kernel in kernel_:
+    for name, kernel in kernels.as_dict.items():
         print(
+            name,
             svm_precomputed_kernel_accuracy(
                 data=data, kernel=kernel, random_state=random_state
-            )
+            ),
         )
