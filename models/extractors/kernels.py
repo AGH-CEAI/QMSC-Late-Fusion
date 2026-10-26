@@ -1,7 +1,7 @@
 import pennylane as qml
 
 
-def circuit_to_kernel(dev, circuit):
+def circuit_to_kernel(dev, circuit, circuit_params={}):
     """
     Takes quantum device and circuit as arguments and returns kernel function.
     Source: https://pennylane.ai/demos/tutorial_kernels_module
@@ -9,8 +9,8 @@ def circuit_to_kernel(dev, circuit):
 
     @qml.qnode(dev)
     def kernel(x1, x2):
-        circuit(x1, wires=dev.wires)
-        qml.adjoint(circuit)(x2, wires=dev.wires)
+        circuit(x1, wires=dev.wires, **circuit_params)
+        qml.adjoint(circuit)(x2, wires=dev.wires, **circuit_params)
         return qml.probs(wires=dev.wires)
 
     return lambda x1, x2: kernel(x1, x2)[0]
